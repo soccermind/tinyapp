@@ -20,12 +20,13 @@ const fetchUser = function(id) {
   return users[id];
 }
 
-const findEmail = function(email) {
-  for (let user in users) {
-    // console.log("User in findEmail: ", user);
+// returns single user object if email is found, null if email is not found.
+const findUserByEmail = function(email) {
+  for (let key in users) {
+    // console.log("User in findUserByEmail: ", user);
     // console.log('user.email: ', users[user].email, 'email:', email);
-    if (users[user].email === email) {
-      return user;
+    if (users[key].email === email) {
+      return users[key];
     } 
   }
   return null; 
@@ -56,12 +57,6 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new", templateVars);
 });
 
-// this one could be replaced by an href in the edit button
-// app.get("/urls/:id/edit", (req, res) => {
-//   const templateVars = { username: req.cookies['username'], shortURL: req.params.id, longURL: urlDatabase[req.params.id] };
-//   res.render("urls_show", templateVars);
-// });
-
 app.get("/urls/:shortURL", (req, res) => {
   const userObj = fetchUser(req.cookies['user_id']);
   const templateVars = { user: userObj, shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
@@ -70,17 +65,18 @@ app.get("/urls/:shortURL", (req, res) => {
 
 // REGISTER ROUTES
 app.get("/register", (req, res) => {
-  res.render("register.ejs");
+  const templateVars = { user: null };
+  res.render("register.ejs", templateVars);
 });
 
 app.post("/register", (req, res) => {
   if (!req.body.email || !req.body.password) {
     console.log('Blank field, users =', users);
-    return res.sendStatus(400);
+    return res.status(400).send("Missing e-mail or password!");
   } 
-  if (findEmail(req.body.email)) {
+  if (findUserByEmail(req.body.email)) {
     console.log('Email exists users =', users);
-    return res.sendStatus(400);
+    return res.status(400).send("E-mail already exists!");
   } else {
     const id = generateRandomString();
     users[id] = { 
@@ -94,6 +90,26 @@ app.post("/register", (req, res) => {
   }
 });
 
+
+// LOGIN ROUTES
+app.get("/login", (req, res) => {
+  const templateVars = { user: null };
+  res.render("login.ejs", templateVars);
+});
+
+app.post("/login", (req, res) => {
+  let user = findUserByEmail(req.body.email);
+  console.log("Login user: ", user);
+  if (!user) {
+    return res.status(403).send("E-mail address is not registered!");
+  }
+  if (user.password !== req.body.password) {
+    console.log("user.password: ", user.password, "req.body.password: ", req.body.password);
+    return res.status(403).send("Incorrect password!");
+  }
+  res.cookie('user_id', user.id);
+  res.redirect("/urls");
+});
 
 app.get("/", (req, res) => {
   res.send("Hello!");
@@ -126,14 +142,8 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   res.redirect("/urls");
 });
 
-app.post("/login", (req, res) => {
-  res.cookie('username', req.body.username);
-  console.log(req.body.username);
-  res.redirect("/urls");
-});
-
 app.post("/logout", (req, res) => {
-  res.clearCookie('username');
+  res.clearCookie('user_id');
   res.redirect("/urls");
 });
 
