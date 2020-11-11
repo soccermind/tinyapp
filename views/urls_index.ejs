@@ -29,20 +29,21 @@
             <td><%= url %></td>
             <td><%= urls[url] %></td>
             <td>
-              <form method="GET" action="/urls/<%= url %>/edit">
-                <button>EDIT</button>
+              <!-- form method="GET" action="/urls/<%= url %>/edit" -->
+              <form>
+              <!-- button class="btn btn-outline-success">EDIT</button -->
+                <a href="/urls/<%= url %>" class="btn btn-outline-success">EDIT</a>
               </form> 
             </td>
             <td>
               <form method="POST" action="/urls/<%= url %>/delete">
-                <button>DELETE</button>
+                <button class="btn btn-outline-secondary">DELETE</button>
               </form> 
             </td>
           </tr>
         <% } %>
       </tbody>
     </table>
-    <a href="#">Shorten a new URL</a>
   </main>
   <!-- Bootstrap JS -->
   <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
