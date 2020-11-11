@@ -14,13 +14,31 @@ const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
 };
+const users = { };
+
+const fetchUser = function(id) {
+  return users[id];
+}
+
+const findEmail = function(email) {
+  for (let user in users) {
+    // console.log("User in findEmail: ", user);
+    // console.log('user.email: ', users[user].email, 'email:', email);
+    if (users[user].email === email) {
+      return user;
+    } 
+  }
+  return null; 
+};
 
 function generateRandomString() {
   return Math.random().toString(36).substring(2,8);
 }
 
 app.get("/urls", (req, res) => {
-  const templateVars = { username: req.cookies['username'], urls: urlDatabase };
+  const userObj = fetchUser(req.cookies['user_id']);
+  console.log('UserObj= ', userObj);
+  const templateVars = { user: userObj, urls: urlDatabase };
   res.render("urls_index", templateVars);
 });
 
@@ -33,7 +51,8 @@ app.get("/u/:shortURL", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
-  const templateVars = { username: req.cookies['username'] }
+  const userObj = fetchUser(req.cookies['user_id']);
+  const templateVars = { user: userObj }
   res.render("urls_new", templateVars);
 });
 
@@ -44,8 +63,35 @@ app.get("/urls/new", (req, res) => {
 // });
 
 app.get("/urls/:shortURL", (req, res) => {
-  const templateVars = { username: req.cookies['username'], shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
+  const userObj = fetchUser(req.cookies['user_id']);
+  const templateVars = { user: userObj, shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
   res.render("urls_show", templateVars);
+});
+
+// REGISTER ROUTES
+app.get("/register", (req, res) => {
+  res.render("register.ejs");
+});
+
+app.post("/register", (req, res) => {
+  if (!req.body.email || !req.body.password) {
+    console.log('Blank field, users =', users);
+    return res.sendStatus(400);
+  } 
+  if (findEmail(req.body.email)) {
+    console.log('Email exists users =', users);
+    return res.sendStatus(400);
+  } else {
+    const id = generateRandomString();
+    users[id] = { 
+      id: id, 
+      email: req.body.email,
+      password: req.body.password
+    };
+    console.log('users =', users);
+    res.cookie('user_id', id);
+    res.redirect("/urls");
+  }
 });
 
 
