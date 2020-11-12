@@ -24,23 +24,27 @@
         </tr>
       </thead>
       <tbody>
-        <% for(let url in urls) { %>
-          <tr>
-            <td><%= url %></td>
-            <td><%= urls[url] %></td>
-            <td>
-              <!-- form method="GET" action="/urls/<%= url %>/edit" -->
-              <form>
-              <!-- button class="btn btn-outline-success">EDIT</button -->
-                <a href="/urls/<%= url %>" class="btn btn-outline-success">EDIT</a>
-              </form> 
-            </td>
-            <td>
-              <form method="POST" action="/urls/<%= url %>/delete">
-                <button class="btn btn-outline-secondary">DELETE</button>
-              </form> 
-            </td>
-          </tr>
+        <% if (!user) { %>
+          <h4>Nothing to display. Please log in or register first.</h4>
+        <% } else { %>
+          <% for(let url in urls) { %>
+            <tr>
+              <td><%= url %></td>
+              <td><%= urls[url].longURL %></td>
+              <td>
+                <!-- form method="GET" action="/urls/<%= url %>/edit" -->
+                <form>
+                <!-- button class="btn btn-outline-success">EDIT</button -->
+                  <a href="/urls/<%= url %>" class="btn btn-outline-success">EDIT</a>
+                </form> 
+              </td>
+              <td>
+                <form method="POST" action="/urls/<%= url %>/delete">
+                  <button class="btn btn-outline-secondary">DELETE</button>
+                </form> 
+              </td>
+            </tr>
+          <% } %>
         <% } %>
       </tbody>
     </table>
