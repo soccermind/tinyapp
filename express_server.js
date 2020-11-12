@@ -1,5 +1,6 @@
 const express = require("express");
 const cookieParser = require('cookie-parser');
+const bcrypt = require('bcrypt');
 
 const app = express();
 const PORT = 8080; 
@@ -74,11 +75,11 @@ app.post("/urls", (req, res) => {
   console.log("urlDatabase[shortURL]", urlDatabase[shortURL])
   urlDatabase[shortURL] = { longURL: req.body['longURL'], userID: req.cookies['user_id'] }
   console.log(urlDatabase);
-  // This redirect should be replaced?
-  res.redirect(`/urls/${shortURL}`);
+  // res.redirect(`/urls/${shortURL}`);
+  res.redirect("/urls");
 });
 
-
+// REDIRECT shortURL --> longURL
 app.get("/u/:shortURL", (req, res) => {
   const longURL = urlDatabase[req.params.shortURL].longURL; // added .longURL
   console.log(longURL);
@@ -95,8 +96,6 @@ app.get("/urls/new", (req, res) => {
   const templateVars = { user: userObj }
   res.render("urls_new", templateVars);
 });
-
-
 
 // EDIT ROUTES 
 app.get("/urls/:shortURL", (req, res) => {
@@ -137,11 +136,13 @@ app.post("/register", (req, res) => {
     return res.status(400).send("E-mail already exists!");
   } else {
     const id = generateRandomString();
+    const hashedPassword = bcrypt.hashSync(req.body.password, 10);
     users[id] = { 
       id: id, 
       email: req.body.email,
-      password: req.body.password
+      password: hashedPassword
     };
+    console.log('orig password: ', req.body.password)
     console.log('users =', users);
     res.cookie('user_id', id);
     res.redirect("/urls");
@@ -160,26 +161,27 @@ app.post("/login", (req, res) => {
   if (!user) {
     return res.status(403).send("E-mail address is not registered!");
   }
-  if (user.password !== req.body.password) {
+  // if (user.password !== req.body.password) {
     console.log("user.password: ", user.password, "req.body.password: ", req.body.password);
+  if (!bcrypt.compareSync(req.body.password, user.password)) {
     return res.status(403).send("Incorrect password!");
   }
   res.cookie('user_id', user.id);
   res.redirect("/urls");
 });
 
-// Useless routes
-app.get("/", (req, res) => {
-  res.send("Hello!");
-});
+// // Useless routes
+// app.get("/", (req, res) => {
+//   res.send("Hello!");
+// });
 
-app.get("/urls.json", (req, res) => {
-  res.json(urlDatabase);
-});
+// app.get("/urls.json", (req, res) => {
+//   res.json(urlDatabase);
+// });
 
-app.get("/hello", (req, res) => {
-  res.send("<html><body>Hello <b>World</b></body></html>\n");
-});
+// app.get("/hello", (req, res) => {
+//   res.send("<html><body>Hello <b>World</b></body></html>\n");
+// });
 
 // DELETE ROUTE
 app.post("/urls/:shortURL/delete", (req, res) => {
