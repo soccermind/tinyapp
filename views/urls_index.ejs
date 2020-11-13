@@ -14,6 +14,9 @@
   </header>
   <main style="margin: 1em;">
     <h3>My URLs</h3>
+    <% if (!user) { %>
+      <h4>Nothing to display. Please log in or register first.</h4>
+    <% } else { %>
     <table class="table">
       <thead>
         <tr>
@@ -24,18 +27,14 @@
         </tr>
       </thead>
       <tbody>
-        <% if (!user) { %>
-          <h4>Nothing to display. Please log in or register first.</h4>
-        <% } else { %>
           <% for(let url in urls) { %>
             <tr>
               <td><%= url %></td>
               <td><%= urls[url].longURL %></td>
               <td>
-                <!-- form method="GET" action="/urls/<%= url %>/edit" -->
+                <form method="GET" action="/urls/<%= url %>">
                 <form>
-                <!-- button class="btn btn-outline-success">EDIT</button -->
-                  <a href="/urls/<%= url %>" class="btn btn-outline-success">EDIT</a>
+                <button class="btn btn-outline-success">EDIT</button>
                 </form> 
               </td>
               <td>
